@@ -33,7 +33,6 @@ def predict():
         data["exerciseangia"],
         data["oldpeak"],
         data["slope"],
-        data["noofmajorvessels"]
     ]])
 
     scaled_data = scaler.transform(features)
