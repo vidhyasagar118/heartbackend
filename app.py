@@ -41,7 +41,7 @@ def predict():
 
     probability = model.predict_proba(scaled_data)[0][1]
 
-    result = "High Risk" if prediction == 1 else "Low Risk"
+    result = "High Risk" if prediction == 0 else "Low Risk"
 
     return jsonify({
         "prediction": result,
