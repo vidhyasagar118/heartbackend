@@ -6,8 +6,8 @@ import numpy as np
 app = Flask(__name__)
 CORS(app)
 
+# Load model & scaler
 model = pickle.load(open("model.pkl", "rb"))
-
 scaler = pickle.load(open("scaler.pkl", "rb"))
 
 
@@ -18,35 +18,44 @@ def home():
 
 @app.route("/predict", methods=["POST"])
 def predict():
+    try:
+        data = request.json
 
-    data = request.json
+        # Convert input into array
+        features = np.array([[
+            data["age"],
+            data["gender"],
+            data["chestpain"],
+            data["restingBP"],
+            data["serumcholestrol"],
+            data["fastingbloodsugar"],
+            data["restingrelectro"],
+            data["maxheartrate"],
+            data["exerciseangia"],
+            data["oldpeak"],
+            data["slope"],
+        ]])
 
-    features = np.array([[
-        data["age"],
-        data["gender"],
-        data["chestpain"],
-        data["restingBP"],
-        data["serumcholestrol"],
-        data["fastingbloodsugar"],
-        data["restingrelectro"],
-        data["maxheartrate"],
-        data["exerciseangia"],
-        data["oldpeak"],
-        data["slope"],
-    ]])
+        # Scale data
+        scaled_data = scaler.transform(features)
 
-    scaled_data = scaler.transform(features)
+        # Prediction
+        prediction = model.predict(scaled_data)[0]
+        probs = model.predict_proba(scaled_data)[0]
 
-    prediction = model.predict(scaled_data)[0]
+        # 🔥 ALWAYS CORRECT MAPPING
+        result = "High Risk" if prediction == 0 else "Low Risk"
+        probability = probs[prediction]
 
-    probability = model.predict_proba(scaled_data)[0][1]
+        return jsonify({
+            "prediction": result,
+            "probability": round(probability * 100, 2)
+        })
 
-    result = "High Risk" if prediction == 0 else "Low Risk"
-
-    return jsonify({
-        "prediction": result,
-        "probability": round(probability * 100, 2)
-    })
+    except Exception as e:
+        return jsonify({
+            "error": str(e)
+        })
 
 
 if __name__ == "__main__":
