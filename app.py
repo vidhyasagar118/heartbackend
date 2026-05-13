@@ -6,7 +6,7 @@ import numpy as np
 app = Flask(__name__)
 CORS(app)
 
-# Load model & scaler
+# Load model and scaler
 model = pickle.load(open("model.pkl", "rb"))
 scaler = pickle.load(open("scaler.pkl", "rb"))
 
@@ -21,7 +21,7 @@ def predict():
     try:
         data = request.json
 
-        # Convert input into array
+        # Input features
         features = np.array([[
             data["age"],
             data["gender"],
@@ -36,20 +36,20 @@ def predict():
             data["slope"],
         ]])
 
-        # Scale data
+        # Scale input
         scaled_data = scaler.transform(features)
 
-        # Prediction
+        # Predict
         prediction = model.predict(scaled_data)[0]
         probs = model.predict_proba(scaled_data)[0]
 
-        # 🔥 ALWAYS CORRECT MAPPING
+        # Correct mapping
         result = "High Risk" if prediction == 0 else "Low Risk"
-        probability = probs[prediction]
 
         return jsonify({
             "prediction": result,
-            "probability": round(probability * 100, 2)
+            "risk_probability": round(probs[0] * 100, 2),
+            "safe_probability": round(probs[1] * 100, 2)
         })
 
     except Exception as e:
